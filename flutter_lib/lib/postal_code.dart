@@ -11,6 +11,12 @@ class PostalCodeField extends StatelessWidget {
   /// Will be called when a [PostalCode] is selected
   final Function(PostalCode)? onSelected;
 
+  /// Initial value for the text field
+  final TextEditingValue? initialValue;
+
+  /// Label for the text field
+  final Text? label;
+
   /// Hint for the text field
   final String? hint;
 
@@ -21,6 +27,8 @@ class PostalCodeField extends StatelessWidget {
     Key? key,
     required this.countryCode,
     required this.onSelected,
+    this.initialValue,
+    this.label,
     this.hint,
     this.suffixIcon,
   }) : super(key: key);
@@ -31,6 +39,7 @@ class PostalCodeField extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) => Autocomplete<PostalCode>(
+        initialValue: initialValue,
         optionsBuilder: (textEditingValue) async {
           final query = textEditingValue.text;
           return query.length > 1
@@ -80,6 +89,7 @@ class PostalCodeField extends StatelessWidget {
             controller: textEditingController,
             focusNode: focusNode,
             decoration: InputDecoration(
+              label: label,
               hintText: hint,
               counter: const SizedBox(),
               suffixIcon: suffixIcon,
@@ -112,7 +122,13 @@ class _PostalCodeService {
       return [];
     }
 
-    final List items = jsonDecode(response.body);
+    dynamic parsedResponse = jsonDecode(response.body);
+    List items = [];
+    if (parsedResponse is List) {
+      items.addAll(parsedResponse);
+    } else if (parsedResponse is Map) {
+      items.add(parsedResponse);
+    }
 
     return items
         .map((item) {
